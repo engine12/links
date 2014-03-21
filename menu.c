@@ -1226,7 +1226,7 @@ static int dlg_smb_options(struct dialog_data *dlg, struct dialog_item_data *di)
 
 #ifdef G
 
-#define VO_GAMMA_LEN 9
+#define VO_GAMMA_LEN 5
 static unsigned char disp_red_g[VO_GAMMA_LEN];
 static unsigned char disp_green_g[VO_GAMMA_LEN];
 static unsigned char disp_blue_g[VO_GAMMA_LEN];
@@ -1262,36 +1262,45 @@ static void refresh_video(struct session *ses)
 
 #define video_msg_0	TEXT_(T_VIDEO_OPTIONS_TEXT)
 
-static unsigned char *video_msg_1[] = {
-	TEXT_(T_RED_DISPLAY_GAMMA),
-	TEXT_(T_GREEN_DISPLAY_GAMMA),
-	TEXT_(T_BLUE_DISPLAY_GAMMA),
-	TEXT_(T_USER_GAMMA),
-	TEXT_(T_ASPECT_RATIO),
-};
-
-static unsigned char *video_msg_2[] = {
-	TEXT_(T_DISPLAY_OPTIMIZATION_CRT),
-	TEXT_(T_DISPLAY_OPTIMIZATION_LCD_RGB),
-	TEXT_(T_DISPLAY_OPTIMIZATION_LCD_BGR),
-	TEXT_(T_DITHER_LETTERS),
-	TEXT_(T_DITHER_IMAGES),
-	TEXT_(T_8_BIT_GAMMA_CORRECTION),
-	TEXT_(T_16_BIT_GAMMA_CORRECTION),
-	TEXT_(T_AUTO_GAMMA_CORRECTION),
-	TEXT_(T_OVERWRITE_SCREEN_INSTEAD_OF_SCROLLING_IT),
-};
-
 static void videoopt_fn(struct dialog_data *dlg)
 {
+	unsigned char *video_msg_1[] = {
+		TEXT_(T_RED_DISPLAY_GAMMA),
+		TEXT_(T_GREEN_DISPLAY_GAMMA),
+		TEXT_(T_BLUE_DISPLAY_GAMMA),
+	};
+
+	unsigned char *video_msg_2[] = {
+		TEXT_(T_DISPLAY_OPTIMIZATION_CRT),
+		TEXT_(T_DISPLAY_OPTIMIZATION_LCD_RGB),
+		TEXT_(T_DISPLAY_OPTIMIZATION_LCD_BGR),
+		TEXT_(T_DITHER_LETTERS),
+		TEXT_(T_DITHER_IMAGES),
+		TEXT_(T_8_BIT_GAMMA_CORRECTION),
+		TEXT_(T_16_BIT_GAMMA_CORRECTION),
+		TEXT_(T_AUTO_GAMMA_CORRECTION),
+		TEXT_(T_OVERWRITE_SCREEN_INSTEAD_OF_SCROLLING_IT),
+	};
+
+	unsigned char *video_msg_3[] = {
+		TEXT_(T_USER_GAMMA),
+		TEXT_(T_ASPECT_RATIO),
+	};
+
+	unsigned char *video_msg_4 = "Display Gamma";
+
 	struct terminal *term = dlg->win->term;
 	int max = 0, min = 0;
-	int w, rw;
+	int w, rw, gw;
 	int y = gf_val(-1, -G_BFU_FONT_SIZE);
 	max_text_width(term, video_msg_0, &max, AL_LEFT);
 	min_text_width(term, video_msg_0, &min, AL_LEFT);
-	max_group_width(term, video_msg_1, dlg->items, 5, &max);
-	min_group_width(term, video_msg_1, dlg->items, 5, &min);
+	max_text_width(term, video_msg_4, &max, AL_CENTER);
+	min_text_width(term, video_msg_4, &min, AL_CENTER);
+	max_group_width(term, video_msg_1, dlg->items, 3, &max);
+	min_group_width(term, video_msg_1, dlg->items, 3, &min);
+	max_group_width(term, video_msg_3, dlg->items+3, 2, &max);
+	min_group_width(term, video_msg_3, dlg->items+3, 2, &min);
 	checkboxes_width(term, video_msg_2, dlg->n-2-5, &max, max_text_width);
 	checkboxes_width(term, video_msg_2, dlg->n-2-5, &min, min_text_width);
 	max_buttons_width(term, dlg->items + dlg->n-2, 2, &max);
@@ -1301,13 +1310,17 @@ static void videoopt_fn(struct dialog_data *dlg)
 	if (w < min) w = min;
 	if (w > dlg->win->term->x - 2 * DIALOG_LB) w = dlg->win->term->x - 2 * DIALOG_LB;
 	if (w < 1) w = 1;
-	rw = 0;
+	rw = 0; gw = 0;
 	dlg_format_text(dlg, NULL, video_msg_0, 0, &y, w, &rw, COLOR_DIALOG_TEXT, AL_LEFT);
-	y += gf_val(1, G_BFU_FONT_SIZE);
-	dlg_format_group(dlg, NULL, video_msg_1, dlg->items, 5, 0, &y, w, &rw);
-	y += gf_val(1, G_BFU_FONT_SIZE);
+	y += gf_val(1, G_BFU_FONT_SIZE/2);
+	dlg_format_text(dlg, NULL,video_msg_4, 0, &y, w, &rw, COLOR_DIALOG_TEXT, AL_CENTER);
+	y += gf_val(1, G_BFU_FONT_SIZE/3);
+	dlg_format_group(dlg, NULL, video_msg_1, dlg->items, 3, 0, &y, w, &gw);
+	y += gf_val(1, G_BFU_FONT_SIZE/3);
+	dlg_format_group(dlg, NULL, video_msg_3, dlg->items+3, 2, 0, &y, w, &gw);
+	y += gf_val(1, G_BFU_FONT_SIZE/2);
 	dlg_format_checkboxes(dlg, NULL, dlg->items+5, dlg->n-2-5, dlg->x + DIALOG_LB, &y, w, &rw, video_msg_2);
-	y += gf_val(1, G_BFU_FONT_SIZE);
+	y += gf_val(1, G_BFU_FONT_SIZE/2);
 	dlg_format_buttons(dlg, NULL, dlg->items+dlg->n-2, 2, 0, &y, w, &rw, AL_CENTER);
 	w = rw;
 	dlg->xw = w + 2 * DIALOG_LB;
@@ -1316,11 +1329,15 @@ static void videoopt_fn(struct dialog_data *dlg)
 	draw_dlg(dlg);
 	y = dlg->y + DIALOG_TB;
 	dlg_format_text(dlg, term, video_msg_0, dlg->x + DIALOG_LB, &y, w, NULL, COLOR_DIALOG_TEXT, AL_LEFT);
-	y += gf_val(2, G_BFU_FONT_SIZE);
-	dlg_format_group(dlg, term, video_msg_1, dlg->items, 5, dlg->x + DIALOG_LB, &y, w, NULL);
-	y += gf_val(1, G_BFU_FONT_SIZE);
+	y += gf_val(1, G_BFU_FONT_SIZE/2);
+	dlg_format_text(dlg, term,video_msg_4, dlg->x + DIALOG_LB, &y, w, NULL, COLOR_DIALOG_TEXT, AL_CENTER);
+	y += gf_val(2, G_BFU_FONT_SIZE/3);
+	dlg_format_group(dlg, term, video_msg_1, dlg->items, 3, dlg->x + DIALOG_LB+(w-gw)/2, &y, w, NULL);
+	y += gf_val(2, G_BFU_FONT_SIZE/3);
+	dlg_format_group(dlg, term, video_msg_3, dlg->items+3, 2, dlg->x + DIALOG_LB+(w-gw)/2, &y, w, NULL);
+	y += gf_val(1, G_BFU_FONT_SIZE/2);
 	dlg_format_checkboxes(dlg, term, dlg->items+5, dlg->n-2-5, dlg->x + DIALOG_LB, &y, w, NULL, video_msg_2);
-	y += gf_val(1, G_BFU_FONT_SIZE);
+	y += gf_val(1, G_BFU_FONT_SIZE/2);
 	dlg_format_buttons(dlg, term, dlg->items+dlg->n-2, 2, dlg->x + DIALOG_LB, &y, w, NULL, AL_CENTER);
 }
 
@@ -2011,9 +2028,11 @@ static unsigned char marg_str[2];
 #ifdef G
 static unsigned char html_font_str[4];
 static unsigned char image_scale_str[6];
+int g_nFontSize =10;
+int g_nImageScale=100;
 #endif
 
-static void html_refresh(struct session *ses)
+void html_refresh(struct session *ses)
 {
 	ses->ds.margin = atoi(cast_const_char marg_str);
 #ifdef G
@@ -2022,6 +2041,7 @@ static void html_refresh(struct session *ses)
 		ses->ds.image_scale = atoi(cast_const_char image_scale_str);
 	}
 #endif
+
 	html_interpret_recursive(ses->screen);
 	draw_formatted(ses);
 }
@@ -2406,23 +2426,20 @@ static void miscopt_fn(struct dialog_data *dlg)
 	if (F)
 	{
 		dlg_format_group(dlg, NULL, labels, dlg->items,1,dlg->x + DIALOG_LB, &y, w, &rw);
-		y += gf_val(1, G_BFU_FONT_SIZE);
+		y += gf_val(1, G_BFU_FONT_SIZE/2);
 		dlg_format_text(dlg, NULL, labels[1], dlg->x + DIALOG_LB, &y, w, &rw, COLOR_DIALOG_TEXT, AL_LEFT);
-		y += gf_val(1, G_BFU_FONT_SIZE);
+		y += gf_val(1, G_BFU_FONT_SIZE/2);
 		dlg_format_group(dlg, NULL, labels+2, dlg->items+1,5,dlg->x + DIALOG_LB, &y, w, &rw);
-		y += gf_val(1, G_BFU_FONT_SIZE);
+		y += gf_val(1, G_BFU_FONT_SIZE/2);
 	}
 #endif
+
 	if (bmk)
-	{
 		dlg_format_text_and_field(dlg, NULL, labels[F?7:0], dlg->items + dlg->n - 4 - a - bmk, 0, &y, w, &rw, COLOR_DIALOG_TEXT, AL_LEFT);
-		y += gf_val(1, G_BFU_FONT_SIZE);
-	}
-	if (bmk) {
-		y += gf_val(1, G_BFU_FONT_SIZE);
-		dlg_format_buttons(dlg, NULL, dlg->items + dlg->n - 3 - a - bmk, 1, 0, &y, w, &rw, AL_LEFT);
-	}
-	if (a) dlg_format_buttons(dlg, NULL, dlg->items + dlg->n - 3 - bmk, 1, 0, &y, w, &rw, AL_LEFT);
+
+	y += gf_val(1, G_BFU_FONT_SIZE/2);
+	dlg_format_buttons(dlg, NULL, dlg->items + dlg->n - 3 - a - bmk, (bmk&&a)?2:1, 0, &y, w, &rw, AL_LEFT);
+
 	if (bmk) dlg_format_checkboxes(dlg, NULL, dlg->items + dlg->n - 3, 1, 0, &y, w, &rw, miscopt_checkbox_labels);
 	dlg_format_buttons(dlg, NULL, dlg->items + dlg->n - 2, 2, 0, &y, w, &rw, AL_CENTER);
 	w = rw;
@@ -2431,33 +2448,34 @@ static void miscopt_fn(struct dialog_data *dlg)
 	center_dlg(dlg);
 	draw_dlg(dlg);
 	y = dlg->y + DIALOG_TB;
+
 #ifdef G
 	if (F)
 	{
-		y += gf_val(1, G_BFU_FONT_SIZE);
+		y += gf_val(1, G_BFU_FONT_SIZE/2);
 		dlg_format_group(dlg, term, labels, dlg->items,1,dlg->x + DIALOG_LB, &y, w, NULL);
-		y += gf_val(1, G_BFU_FONT_SIZE);
+		y += gf_val(1, G_BFU_FONT_SIZE/2);
 		dlg_format_text(dlg, term, labels[1], dlg->x + DIALOG_LB, &y, w, NULL, COLOR_DIALOG_TEXT, AL_LEFT);
-		y += gf_val(1, G_BFU_FONT_SIZE);
+		y += gf_val(1, G_BFU_FONT_SIZE/2);
 		dlg_format_group(dlg, term, labels+2, dlg->items+1,5,dlg->x + DIALOG_LB, &y, w, NULL);
-		y += gf_val(1, G_BFU_FONT_SIZE);
+		y += gf_val(1, G_BFU_FONT_SIZE/2);
 	} else
 #endif
 	{
-		y += gf_val(1, G_BFU_FONT_SIZE);
+		y += gf_val(1, G_BFU_FONT_SIZE/2);
 	}
 	if (bmk)
-	{
 		dlg_format_text_and_field(dlg, term, labels[F?7:0], dlg->items + dlg->n - 4 - a - bmk, dlg->x + DIALOG_LB, &y, w, NULL, COLOR_DIALOG_TEXT, AL_LEFT);
-		y += gf_val(1, G_BFU_FONT_SIZE);
-		dlg_format_buttons(dlg, term, dlg->items + dlg->n - 3 - a - bmk, 1, dlg->x + DIALOG_LB, &y, w, NULL, AL_CENTER);
-	}
-	if (a) dlg_format_buttons(dlg, term, dlg->items + dlg->n - 3 - bmk, 1, dlg->x + DIALOG_LB, &y, w, NULL, AL_CENTER);
+	
+	y += gf_val(1, G_BFU_FONT_SIZE/2);
+	dlg_format_buttons(dlg, term, dlg->items + dlg->n - 3 - a - bmk, (bmk&&a)?2:1, dlg->x + DIALOG_LB, &y, w, NULL, AL_CENTER);
+	
 	if (bmk) {
 		dlg_format_checkboxes(dlg, term, dlg->items + dlg->n - 3, 1, dlg->x + DIALOG_LB, &y, w, NULL, miscopt_checkbox_labels);
-		y += gf_val(1, G_BFU_FONT_SIZE);
+		y += gf_val(1, G_BFU_FONT_SIZE/2);
 	}
 	dlg_format_buttons(dlg, term, dlg->items+dlg->n-2, 2, dlg->x + DIALOG_LB, &y, w, NULL, AL_CENTER);
+
 }
 
 

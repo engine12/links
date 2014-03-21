@@ -1138,7 +1138,7 @@ static void draw_doc_c(struct terminal *t, struct f_data_c *scr)
 {
 	clr_xl(scr);
 #ifdef G
-	if (F) if (scr == scr->ses->screen) draw_title(scr);
+	//if (F) if (scr == scr->ses->screen) draw_title(scr);
 #endif
 	draw_doc(t, scr);
 }
@@ -3048,12 +3048,33 @@ static int frame_ev(struct session *ses, struct f_data_c *fd, struct event *ev)
 		return 1;
 	}
 	if (ev->ev == EV_KBD) {
+#if 1 /* ZIPIT_Z2 */
+		/* Add more conveient scroll keys for ZIPIT_Z2 */
+		if (ev->x == KBD_PAGE_DOWN || (upcase(ev->x) == 'F' && ev->y & KBD_CTRL) || (ev->x == KBD_DOWN && ev->y)) rep_ev(ses, fd, page_down, 0);
+		else if (ev->x == KBD_PAGE_UP || (upcase(ev->x) == 'B' && (!(ev->y & KBD_ALT))) || (ev->x == KBD_UP && ev->y)) rep_ev(ses, fd, page_up, 0);
+		else if ((ev->x == KBD_DOWN) || (ev->x == ' ' && !(ev->y & KBD_ALT) && !(ev->y & KBD_SHIFT))) rep_ev(ses, fd, scroll, 1 + !ses->kbdprefix.rep);		  
+		else if ((ev->x == KBD_UP) || (ev->x == ' ' && !(ev->y & KBD_ALT) && (ev->y & KBD_SHIFT))) rep_ev(ses, fd, scroll, -1 - !ses->kbdprefix.rep);
+		/* Use dpad arrow buttons to scroll ZIPIT_Z2 and use <,>. for URLS. */	
+		else if (ev->x == KBD_LEFT) rep_ev(ses, fd, hscroll, -1 - 7 * !ses->kbdprefix.rep);
+		else if (ev->x == KBD_RIGHT) rep_ev(ses, fd, hscroll, 1 + 7 * !ses->kbdprefix.rep);
+		/* Allow TAB, BACKTAB to traverse links on ZIPIT_Z2 */
+		else if ((ev->x == KBD_TAB) && ev->y) rep_ev(ses, fd, up, 0);
+		else if ((ev->x == KBD_TAB) && !ev->y) rep_ev(ses, fd, down, 0); /* Shift-tab doesn't seem to work. */
+		/* Zipit has KBD_INS on alt-tab so use it as backtab, at least until backtab (shift-tab) works. */
+		else if (ev->x == KBD_INS) rep_ev(ses, fd, up, 0);
+		/* Allow <,>. to also traverse links on ZIPIT_Z2 */
+		else if ((ev->x == ',') || (ev->x == '{') || (ev->x == '(')) rep_ev(ses, fd, up, 0);
+		else if ((ev->x == '.') || (ev->x == '}') || (ev->x == ')')) rep_ev(ses, fd, down, 0);
+		/* Every form of backup known to man (including ^H) should go back in histroy on Zipit. */
+		else if ((ev->x == KBD_BS) || (ev->x == KBD_DEL) || (ev->x == 8)) go_back(ses, 1);
+#else
 		if (ev->x == KBD_PAGE_DOWN || (ev->x == ' ' && (!(ev->y & KBD_ALT))) || (upcase(ev->x) == 'F' && ev->y & KBD_CTRL)) rep_ev(ses, fd, page_down, 0);
 		else if (ev->x == KBD_PAGE_UP || (upcase(ev->x) == 'B' && (!(ev->y & KBD_ALT)))) rep_ev(ses, fd, page_up, 0);
 		else if (ev->x == KBD_DOWN) rep_ev(ses, fd, down, 0);
 		else if (ev->x == KBD_UP) rep_ev(ses, fd, up, 0);
 		else if (ev->x == KBD_LEFT && ses->term->spec->braille) rep_ev(ses, fd, left, 0);
 		else if (ev->x == KBD_RIGHT && ses->term->spec->braille) rep_ev(ses, fd, right, 0);
+#endif
 		else if (ev->x == '{' && ses->term->spec->braille) rep_ev(ses, fd, cursor_home, 0);
 		else if (ev->x == '}' && ses->term->spec->braille) rep_ev(ses, fd, cursor_end, 0);
 		else if (upcase(ev->x) == 'Y' && !(ev->y & (KBD_CTRL | KBD_ALT)) && ses->term->spec->braille) rep_ev(ses, fd, cursor_word, 0);
@@ -3077,7 +3098,11 @@ static int frame_ev(struct session *ses, struct f_data_c *fd, struct event *ev)
 		else if (upcase(ev->x) == 'E' && ev->y & KBD_CTRL) rep_ev(ses, fd, scroll, 1);*/
 		else if (ev->x == KBD_HOME || (upcase(ev->x) == 'A' && ev->y & KBD_CTRL)) rep_ev(ses, fd, home, 0);
 		else if (ev->x == KBD_END || (upcase(ev->x) == 'E' && ev->y & KBD_CTRL)) rep_ev(ses, fd, x_end, 0);
+#if 1 /* ZIPIT_Z2 */
+		else if (ev->x == KBD_ENTER) {
+#else
 		else if ((ev->x == KBD_RIGHT && !ses->term->spec->braille) || ev->x == KBD_ENTER) {
+#endif
 			x = enter(ses, fd, 0);
 		} else if (ev->x == '*') {
 			ses->ds.images ^= 1; 
@@ -3436,10 +3461,30 @@ void send_event(struct session *ses, struct event *ev)
 			next_frame(ses, ev->y ? -1 : 1);
 			draw_formatted(ses);
 		}
+#if 1 /* ZIPIT_Z2 */
+		/* Use dpad arrow buttons to scroll ZIPIT_Z2 and use <,>. for URLS. */	
+		if ((ev->y & KBD_ALT) && (ev->x == KBD_BS || ev->x == KBD_DEL || ev->x == 8) || (ev->x == '>')) {
+			go_back(ses, -1);
+			goto x;
+		}
+		if ((ev->x == KBD_BS) || (ev->x == KBD_DEL) || (ev->x == 8) || (ev->x == '<')) { /* 0x127 or 0x8 */
+			go_back(ses, 1);
+			goto x;
+		}
+		if (ev->x == '>') { /* 0x127 or 0x8 */
+			go_back(ses, -1);
+			goto x;
+		}
+#else
 		if (ev->x == KBD_LEFT && !ses->term->spec->braille) {
 			go_back(ses, 1);
 			goto x;
 		}
+		if (ev->x == KBD_RIGHT && !ses->term->spec->braille) {
+			go_back(ses, -1);
+			goto x;
+		}
+#endif		
 		if (upcase(ev->x) == 'Z' && !(ev->y & (KBD_CTRL | KBD_ALT))) {
 			go_back(ses, 1);
 			goto x;
@@ -3468,6 +3513,10 @@ void send_event(struct session *ses, struct event *ev)
 		}
 		if (upcase(ev->x) == 'R' && ev->y & KBD_CTRL) {
 			reload(ses, -1);
+			goto x;
+		}
+		if (upcase(ev->x) == 'S' && ev->y & KBD_CTRL) {
+			abort_all_connections();
 			goto x;
 		}
 		if (ev->x == 'g' && !(ev->y & (KBD_CTRL | KBD_ALT))) {

@@ -1551,7 +1551,7 @@ fprintf(stdout, "%s%s%s%s%s%s\n",
 "\n"
 " -font-cache-size <bytes>\n"
 "  Font cache in bytes.\n"
-"    (default: 2097152)\n"
+"    (default: 1048576)\n"
 "\n"
 " -aggressive-cache <0>/<1>\n"
 "    (default 1)\n"
@@ -1939,9 +1939,9 @@ int async_lookup = 1;
 int download_utime = 0;
 
 int max_format_cache_entries = 5;
-int memory_cache_size = 4194304;
+int memory_cache_size = 1048576;
 int image_cache_size = 1048576;
-int font_cache_size = 2097152;
+int font_cache_size = 1048576;
 int aggressive_cache = 1;
 
 struct ipv6_options ipv6_options = { ADDR_PREFERENCE_DEFAULT };

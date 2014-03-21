@@ -57,12 +57,17 @@ SSL *getSSL(void)
 			RAND_add(pool, sizeof pool, sizeof pool);
 		}*/
 
-		SSLeay_add_ssl_algorithms();
+		SSL_library_init();
 		m = SSLv23_client_method();
 		if (!m) return NULL;
 		context = SSL_CTX_new((void *)m);
 		if (!context) return NULL;
-		SSL_CTX_set_options(context, SSL_OP_ALL);
+		
+		//SSL_OP_LEGACY_SERVER_CONNECT -- clear this flag -- do not connect to unpatched servers
+		SSL_CTX_clear_options(context, SSL_OP_LEGACY_SERVER_CONNECT);
+		// SSL_OP_ALL <-- may need this for connecting to buggy servers, can reduce security
+		//SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 <-- maybe an option?
+		SSL_CTX_set_options(context, SSL_OP_NO_SSLv2  | SSL_OP_SINGLE_DH_USE );
 		SSL_CTX_set_default_verify_paths(context);
 
 	}

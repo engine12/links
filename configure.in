@@ -18,7 +18,7 @@ AM_CONFIG_HEADER(config.h)
 dnl Checks for programs.
 AC_PROG_CC
 
-dnl AC_PROG_CXX
+AC_PROG_CXX
 dnl AC_PROG_AWK
 dnl AM_PROG_LEX
 dnl AC_PROG_YACC
@@ -884,7 +884,7 @@ AC_ARG_WITH(svgalib, [  --without-svgalib       compile without svgalib graphics
 AC_ARG_WITH(x, [  --without-x             compile without X Window System graphics driver],[if test "$withval" = no; then disable_x=yes; else disable_x=no; fi])
 AC_ARG_WITH(fb, [  --without-fb            compile without Linux Framebuffer graphics driver],[if test "$withval" = no; then disable_fb=yes; else disable_fb=no; fi])
 AC_ARG_WITH(directfb, [  --without-directfb      compile without DirectFB graphics driver],[if test "$withval" = no; then disable_directfb=yes; else disable_directfb=no; fi])
-dnl AC_ARG_WITH(sdl, [  --without-sdl           compile without SDL graphics driver],[if test "$withval" = no; then disable_sdl=yes; else disable_sdl=no; fi])
+AC_ARG_WITH(sdl, [  --without-sdl           compile without SDL graphics driver],[if test "$withval" = no; then disable_sdl=yes; else disable_sdl=no; fi])
 AC_ARG_WITH(pmshell, [  --without-pmshell       compile without PMShell graphics driver],[if test "$withval" = no; then disable_pmshell=yes; else disable_pmshell=no; fi])
 AC_ARG_WITH(windows, [  --without-windows       compile without Windows graphics driver],[if test "$withval" = no; then disable_windows=yes; else disable_windows=no; fi])
 AC_ARG_WITH(atheos, [  --without-atheos        compile without Atheos graphics driver],[if test "$withval" = no; then disable_atheos=yes; else disable_atheos; fi])
@@ -1008,25 +1008,25 @@ if test "$disable_x" != yes; then
 	fi
 fi
 
-dnl if test "$disable_sdl" != yes; then
-dnl 	AC_PATH_PROG(SDL_CONFIG, sdl-config, no)
-dnl 	if test "$SDL_CONFIG" != "no"; then
-dnl 	        AC_MSG_CHECKING(for SDL >= 1.2.0)
-dnl         	sdl_version="`$SDL_CONFIG --version`"
-dnl 		if expr "$sdl_version" \>= 1.2.0 >/dev/null; then
-dnl 			AC_MSG_RESULT(yes)
-dnl 			SDL_CFLAGS="`$SDL_CONFIG --cflags`"
-dnl 			SDL_LIBS="`$SDL_CONFIG --libs`"
-dnl 	           	AC_DEFINE(GRDRV_SDL)
-dnl         	   	drivers="$drivers SDL"
-dnl 			CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
-dnl 			AC_CHECK_LIB(Xext, XextAddDisplay)
-dnl 			LIBS="$SDL_LIBS $LIBS"
-dnl 		else
-dnl 			AC_MSG_RESULT(no)
-dnl 		fi
-dnl 	fi
-dnl fi
+if test "$disable_sdl" != yes; then
+ 	AC_PATH_PROG(SDL_CONFIG, sdl-config, no)
+ 	if test "$SDL_CONFIG" != "no"; then
+ 	        AC_MSG_CHECKING(for SDL >= 1.2.0)
+         	sdl_version="`$SDL_CONFIG --version`"
+ 		if expr "$sdl_version" \>= 1.2.0 >/dev/null; then
+ 			AC_MSG_RESULT(yes)
+ 			SDL_CFLAGS="`$SDL_CONFIG --cflags`"
+ 			SDL_LIBS="`$SDL_CONFIG --libs`"
+ 	           	AC_DEFINE(GRDRV_SDL)
+         	   	drivers="$drivers SDL"
+ 			CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
+ 			AC_CHECK_LIB(Xext, XextAddDisplay)
+ 			LIBS="$SDL_LIBS $LIBS"
+ 		else
+ 			AC_MSG_RESULT(no)
+ 		fi
+ 	fi
+fi
 
 if test "$disable_pmshell" != yes; then
 	AC_CACHE_CHECK([for pmshell], ac_cv_have_pmshell,

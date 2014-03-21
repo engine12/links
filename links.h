@@ -66,7 +66,7 @@
 #endif
 #ifndef _XOPEN_SOURCE
 #define X_S
-#define _XOPEN_SOURCE	5	/* The 5 is a kludge to get a strptime() prototype in NetBSD */
+#define _XOPEN_SOURCE   5       /* The 5 is a kludge to get a strptime() prototype in NetBSD */
 #endif
 #ifdef TIME_WITH_SYS_TIME
 #ifdef HAVE_SYS_TIME_H
@@ -426,7 +426,7 @@ int sigfillset(sigset_t *set);
 #ifndef G
 #define F 0
 #else
-extern int F;
+extern int F; //tells us what mode we are in -- graphics or text --> aka formatted or unformatted
 #endif
 
 #if defined(DEBUG)
@@ -836,7 +836,7 @@ void os_detach_console(void);
 #define SH_FREE_ALL		2
 
 #define ST_SOMETHING_FREED	1
-#define ST_CACHE_EMPTY		2
+#define ST_CACHE_EMPTY	2
 
 #define MF_GPI			1
 
@@ -1031,7 +1031,7 @@ struct connection {
 	struct connection *prev;
 	tcount count;
 	unsigned char *url;
-	unsigned char *prev_url;	/* allocated string with referrer or NULL */
+	unsigned char *prev_url;   /* allocated string with referrer or NULL */
 	int running;
 	int state;
 	int prev_error;
@@ -1128,6 +1128,7 @@ static inline int getpri(struct connection *c)
 #define S_SMB_NOT_ALLOWED	(-2000000017)
 #define S_FILE_NOT_ALLOWED	(-2000000018)
 #define S_NO_PROXY		(-2000000019)
+#define S_HIDE_STATUS			(-2000000020)
 
 #define S_HTTP_ERROR		(-2000000100)
 #define S_HTTP_100		(-2000000101)
@@ -1464,22 +1465,22 @@ struct lru_entry {
 	unsigned bytes_consumed;
 };
 
-struct lru {
+struct lru{
 	int (*compare_function)(void *, void *);
 	struct lru_entry *top, *bottom;
 	my_uintptr_t bytes, items;
 };
 
 void lru_insert(struct lru *cache, void *entry, struct lru_entry **row, unsigned bytes_consumed);
-void *lru_get_bottom(struct lru *cache);
-void lru_destroy_bottom(struct lru *cache);
+void * lru_get_bottom(struct lru *cache);
+void lru_destroy_bottom(struct lru* cache);
 void lru_init (struct lru *cache, int (*compare_function)(void *entry, void *templ));
 void *lru_lookup(struct lru *cache, void *templ, struct lru_entry *row);
 
 /* drivers.c */
 
-struct irgb {
-	int r,g,b; /* 0xffff=full white, 0x0000=full black */
+struct irgb{
+        int r,g,b; /* 0xffff=full white, 0x0000=full black */
 };
 
 /* Bitmap is allowed to pass only to that driver from which was obtained.
@@ -1504,25 +1505,25 @@ struct rect_set {
 	struct rect r[1];
 };
 
-struct graphics_device {
-	/* Only graphics driver is allowed to write to this */
+struct graphics_device{
+        /* Only graphics driver is allowed to write to this */
 
-	struct rect size; /* Size of the window */
-	/*int left, right, top, bottom;*/
+        struct rect size; /* Size of the window */
+        /*int left, right, top, bottom;*/
 	struct rect clip;
-		/* right, bottom are coords of the first point that are outside the clipping area */
-	
-	void *driver_data;
+                /* right, bottom are coords of the first point that are outside the clipping area */
+        
+        void * driver_data;
 
-	/* Only user is allowed to write here, driver inits to zero's */
-	void *user_data;
-	void (*redraw_handler)(struct graphics_device *dev, struct rect *r);
-	void (*resize_handler)(struct graphics_device *dev);
-	void (*keyboard_handler)(struct graphics_device *dev, int key, int flags);
-	void (*mouse_handler)(struct graphics_device *dev, int x, int y, int buttons);
+        /* Only user is allowed to write here, driver inits to zero's */
+        void * user_data;
+        void (*redraw_handler)(struct graphics_device *dev, struct rect *r);
+        void (*resize_handler)(struct graphics_device *dev);
+        void (*keyboard_handler)(struct graphics_device *dev, int key, int flags);
+        void (*mouse_handler)(struct graphics_device *dev, int x, int y, int buttons);
 };
 
-struct graphics_driver {
+struct graphics_driver{
 	unsigned char *name;
 	unsigned char *(*init_driver)(unsigned char *param, unsigned char *display);	/* param is get from get_driver_param and saved into configure file */
 	
@@ -1627,7 +1628,7 @@ struct graphics_driver {
 	int x, y;	/* size of screen. only for drivers that use virtual devices */
 	int flags;	/* GD_xxx flags */
 	int codepage;
-	unsigned char *shell;
+	unsigned char *shell;  
 		/* -if exec is NULL string is unused
 	 	   -otherwise this string describes shell to be executed by the 
 		    exec function, the '%' char means string to be executed
@@ -1688,7 +1689,7 @@ my_uintptr_t fontcache_info(int type);
 
 #define G_BFU_FONT_SIZE menu_font_size
 
-struct read_work {
+struct read_work{
 	unsigned char *pointer;
 	int length;
 };
@@ -1713,17 +1714,17 @@ struct font {
 	int length; /* Length in the letter stream */
 };
 
-struct style {
+struct style{
 	int refcount;
 	unsigned char r0, g0, b0, r1, g1, b1;
-	/* ?0 are background, ?1 foreground.
+       	/* ?0 are background, ?1 foreground.
 	 * These are unrounded 8-bit sRGB space 
 	 */
 	int height;
 	int flags; /* non-zero means underline */
 	long underline_color; /* Valid only if flags are nonzero */
 	int *table; /* First is refcount, then n_fonts entries. Total
-		     * size is n_fonts+1 integers.
+                     * size is n_fonts+1 integers.
 		     */
 	int mono_space; /* -1 if the font is not monospaced
 			 * width of the space otherwise
@@ -1736,11 +1737,11 @@ struct style {
 	*/
 };
 
-struct font_cache_entry {
+struct font_cache_entry{
 	int type; /* One of FC_BW or FC_COLOR */
 	int r0,g0,b0,r1,g1,b1; /* Invalid for FC_BW */
 	struct bitmap bitmap; /* If type==FC_BW, then this is not a normal registered
-			       * bitmap, but a black-and-white bitmap
+	                       * bitmap, but a black-and-white bitmap
 			       */
 	int mono_space, mono_height; /* if the letter was rendered for a
 	monospace font, then size of the space. Otherwise, mono_space
@@ -2231,7 +2232,7 @@ struct object_request {
 	struct cache_entry *ce;
 	unsigned char *orig_url;
 	unsigned char *url;
-	unsigned char *prev_url;	/* allocated string with referrer or NULL */
+	unsigned char *prev_url;   /* allocated string with referrer or NULL */
 	unsigned char *goto_position;
 	int pri;
 	int cache;
@@ -2675,7 +2676,7 @@ struct g_object_tag {
 #define IM_TIFF 4
 #endif /* #ifdef HAVE_TIFF */
 
-#define MEANING_DIMS	  0
+#define MEANING_DIMS      0
 #define MEANING_AUTOSCALE 1
 struct cached_image {
 	struct cached_image *next;
@@ -2741,7 +2742,7 @@ struct cached_image {
 	unsigned char eof_hit;
 	int *dregs; /* Only for stip-optimized cached images */
 	unsigned short *gamma_table; /* When suitable and source is 8 bits per pixel,
-				      * this is allocated to 256*3*sizeof(*gamma_table)
+			              * this is allocated to 256*3*sizeof(*gamma_table)
 				      * = 1536 bytes and speeds up the gamma calculations
 				      * tremendously */
 };
@@ -2758,21 +2759,21 @@ struct g_object_image {
 			     xw, yw: width on the screen, or <0 if
 			     not yet known. Already scaled. */
 	/* For html parser. If xw or yw are zero, then entries
-	       background_color
-	       af
-	       width
-	       height
-	       image_type
-	       buffer
-	       buffer_bytes_per_pixel
-	       *_gamma
-	       gamma_stamp
-	       bmp
-	       last_length
-	       last_count2
-	       decoder
-	       rows_added
-	       reparse
+               background_color
+               af
+               width
+               height
+               image_type
+               buffer
+               buffer_bytes_per_pixel
+               *_gamma
+               gamma_stamp
+               bmp
+               last_length
+               last_count2
+               decoder
+               rows_added
+               reparse
        	are uninitialized and thus garbage
       	*/
 
@@ -3272,7 +3273,7 @@ void jsint_set_cookies(struct f_data_c *fd, int final_flush);
 struct f_data_c *jsint_find_document(long doc_id);
 
 void js_upcall_document_write(void *p, unsigned char *str, int len);
-void js_upcall_alert(void *struct_fax_me_tender_string);
+void js_upcall_alert(void * struct_fax_me_tender_string);
 unsigned char *js_upcall_get_title(void *data);
 void js_upcall_set_title(void *data, unsigned char *title);
 unsigned char *js_upcall_get_location(void *data);
@@ -3327,12 +3328,12 @@ int js_upcall_get_select_index(void *smirak, long document_id, long select_id); 
 struct js_select_item* js_upcall_get_select_options(void *smirak, long document_id, long select_id, int *n);
 void js_upcall_goto_url(void* struct_fax_me_tender_string);
 int js_upcall_get_history_length(void *context);
-void js_upcall_goto_history(void* data);
+void js_upcall_goto_history(void * data);
 void js_upcall_set_default_status(void *context, unsigned char *tak_se_ukaz_Kolbene);
-unsigned char *js_upcall_get_default_status(void *context);
+unsigned char* js_upcall_get_default_status(void *context);
 void js_upcall_set_status(void *context, unsigned char *tak_se_ukaz_Kolbene);
-unsigned char *js_upcall_get_status(void *context);
-unsigned char *js_upcall_get_cookies(void *context);
+unsigned char* js_upcall_get_status(void *context);
+unsigned char * js_upcall_get_cookies(void *context);
 long *js_upcall_get_images(void *smirak, long document_id, int *len);
 long * js_upcall_get_all(void *context, long document_id, int *len);
 int js_upcall_get_image_width(void *smirak, long document_id, long image_id);
@@ -3340,11 +3341,11 @@ int js_upcall_get_image_height(void *smirak, long document_id, long image_id);
 int js_upcall_get_image_border(void *smirak, long document_id, long image_id);
 int js_upcall_get_image_vspace(void *smirak, long document_id, long image_id);
 int js_upcall_get_image_hspace(void *smirak, long document_id, long image_id);
-unsigned char *js_upcall_get_image_name(void *smirak, long document_id, long image_id);
-unsigned char *js_upcall_get_image_alt(void *smirak, long document_id, long image_id);
+unsigned char * js_upcall_get_image_name(void *smirak, long document_id, long image_id);
+unsigned char * js_upcall_get_image_alt(void *smirak, long document_id, long image_id);
 void js_upcall_set_image_name(void *smirak, long document_id, long image_id, unsigned char *name);
 void js_upcall_set_image_alt(void *smirak, long document_id, long image_id, unsigned char *alt);
-unsigned char *js_upcall_get_image_src(void *smirak, long document_id, long image_id);
+unsigned char * js_upcall_get_image_src(void *smirak, long document_id, long image_id);
 void js_upcall_set_image_src(void *chuligane);
 int js_upcall_image_complete(void *smirak, long document_id, long image_id);
 long js_upcall_get_parent(void *smirak, long frame_id);
@@ -3860,18 +3861,18 @@ struct gif_table_entry
 {
  unsigned char end_char;
  unsigned char garbage; /* This has nothing common to do with code table:
-			   this is temporarily used for reverting strings :-) */
+                           this is temporarily used for reverting strings :-) */
  short pointer; /* points onto another entry in table, number 0...4095.
-		   number -1 means it end there, the end_char is the last
+                   number -1 means it end there, the end_char is the last
 		   number -2 means that this entry is no filled in yet.
-		*/
+                */
 };
 
 struct gif_decoder{
 	unsigned char *color_map; /* NULL if no color map, otherwise a block of 768 bytes, red, green, blue,
 				     in sRGB, describing color slots 0...255. */
 	int state; /* State of the automatus finitus recognizing the GIF
-		    * format.  0 is initial. */
+	            * format.  0 is initial. */
 	/* Image width, height, bits per pixel, bytes per line, number of bit planes */
 	int im_width;
 	int im_height;
@@ -3886,7 +3887,7 @@ struct gif_decoder{
 	int xoff, yoff;
 	int interl_dist;
 	int bits_read; /* How many bits are already read from the symbol
-			* Currently being read */
+	                * Currently being read */
 	int last_code; /* This is somehow used in the decompression algorithm */
 	int read_code;
 	int CC;
@@ -4511,7 +4512,7 @@ extern struct document_setup dds;
 #define TITLE_EDIT 0
 #define TITLE_ADD 1
 
-struct list {
+struct list{
 	void *next;
 	void *prev;
 	unsigned char type;
@@ -4529,11 +4530,11 @@ struct list {
 char *regexp_replace(char *, char *, char *);
 
 
-struct list_description {
+struct list_description{
 	unsigned char type;  /* 0=flat, 1=tree */
-	struct list *list;   /* head of the list */
+	struct list* list;   /* head of the list */
 	void *(*new_item)(void * /* data in internal format */);  /* creates new item, does NOT add to the list */
-	void (*edit_item)(struct dialog_data *, void * /* item */, void(*)(struct dialog_data *,void *,void *,struct list_description *) /* ok function */, void * /* parameter for the ok_function */, unsigned char);  /* must call call delete_item on the item after all */
+	void (*edit_item)(struct dialog_data *, void * /* item */, void(*)(struct dialog_data *,void *,void *,struct list_description *)/* ok function */, void * /* parameter for the ok_function */, unsigned char);  /* must call call delete_item on the item after all */
 	void *(*default_value)(struct session *, unsigned char /* 0=item, 1=directory */);  /* called when add button is pressed, allocates memory, return value is passed to the new_item function, new_item fills the item with this data */
 	void (*delete_item)(void *);  /* delete item, if next and prev are not NULL adjusts pointers in the list */
 	void (*copy_item)(void * /* old */, void * /* new */);  /* gets 2 allocated items, copies all item data except pointers from first item to second one, old data (in second item) will be destroyed */

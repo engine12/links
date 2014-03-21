@@ -157,6 +157,7 @@ void change_screen_status(struct session *ses)
 	 */
 	ses->st = NULL;
 	if (stat) {
+		if (stat->state == S_HIDE_STATUS) return;
 		if (stat->state == S__OK) ses->st = print_current_link(ses);
 		if (!ses->st) ses->st = ses->default_status ? stracpy(ses->default_status) : get_stat_msg(stat, ses->term);
 	} else {
@@ -181,10 +182,10 @@ static void x_print_screen_status(struct terminal *term, struct session *ses)
 			mem_free(m);
 		}
 #ifdef G
-	} else {
+	} else  if (ses->st && strcmp(cast_const_char ses->st, cast_const_char _(TEXT_(T_OK), term) )){
 		int l = 0;
-		if (ses->st) g_print_text(drv, term->dev, 0, term->y - G_BFU_FONT_SIZE, bfu_style_wb_mono, ses->st, &l);
-		drv->fill_area(term->dev, l, term->y - G_BFU_FONT_SIZE, term->x, term->y, bfu_bg_color);
+		g_print_text(drv, term->dev, 0, term->y - G_BFU_FONT_SIZE, bfu_style_wb_mono, ses->st, &l);
+		drv->fill_area(term->dev, l, term->y - G_BFU_FONT_SIZE, term->x, term->y, bfu_fg_color);
 #endif
 	}
 }
@@ -209,14 +210,16 @@ void print_screen_status(struct session *ses)
 #ifdef G
 	skip_status:
 #endif
+	if (!F){
 	m = stracpy(cast_uchar "Links");
 	if (ses->screen && ses->screen->f_data && ses->screen->f_data->title && ses->screen->f_data->title[0]) add_to_strn(&m, cast_uchar " - "), add_to_strn(&m, ses->screen->f_data->title);
 	set_terminal_title(ses->term, m);
 	/*mem_free(m); -- set_terminal_title frees it */
 
-	if (!F && ses->brl_cursor_mode) {
+		if (ses->brl_cursor_mode) {
 		if (ses->brl_cursor_mode == 1) set_cursor(ses->term, 0, 0, 0, 0);
 		if (ses->brl_cursor_mode == 2) set_cursor(ses->term, 0, ses->term->y - 1, 0, ses->term->y - 1);
+		}
 	}
 }
 
@@ -1831,7 +1834,9 @@ static void refresh_timer(struct f_data_c *fd)
 	fd->refresh_timer = -1;
 	if (fd->f_data && fd->f_data->refresh) {
 		fd->refresh_timer = install_timer(fd->f_data->refresh_seconds * 1000, (void (*)(void *))refresh_timer, fd);
-		goto_url_f(fd->ses, NULL, fd->f_data->refresh, cast_uchar "_self", fd, -1, 0, 0, 1);
+		
+		reload(fd->ses, -1);
+//		goto_url_f(fd->ses, NULL, fd->f_data->refresh, cast_uchar "_self", fd, -1, 0, 0, 1);
 	}
 }
 
@@ -2235,9 +2240,13 @@ static void tp_save(struct session *ses)
 	query_file(ses, ses->tq->url, ses->tq->ce ? ses->tq->ce->head : NULL, &continue_download, tp_cancel, DOWNLOAD_CONTINUE);
 }
 
+int g_xwin =0;
+
 static void tp_open(struct session *ses)
 {
 	continue_download(ses, cast_uchar "", DOWNLOAD_DEFAULT);
+	if(g_xwin)
+		SDL_WM_IconifyWindow();	
 }
 
 static int ses_abort_1st_state_loading(struct session *ses)
@@ -2310,6 +2319,7 @@ static int prog_sel_open(struct dialog_data *dlg, struct dialog_item_data *idata
 
 	if (!a) internal("This should not happen.\n");
 	ses->tq_prog = stracpy(a->prog), ses->tq_prog_flag_block = a->block, ses->tq_prog_flag_direct = direct_download_possible(ses->tq, a);
+	g_xwin = a->xwin;	
 	tp_open(ses);
 	cancel_dialog(dlg,idata);
 	return 0;
@@ -2340,9 +2350,7 @@ static void type_query_multiple_programs(struct session *ses, unsigned char *ct,
 	ml = getml(d, a, ct, text_array, NULL);
 
 	for (i = 0; i < n; i++) {
-		unsigned char *bla = stracpy(_(TEXT_(T_OPEN_WITH),ses->term));
-		add_to_strn(&bla, cast_uchar " ");
-		add_to_strn(&bla, a[i].label);
+		unsigned char *bla=stracpy(_(a[i].label,ses->term));
 		
 		d->items[i].type = D_BUTTON;
 		d->items[i].fn = prog_sel_open;
@@ -2387,6 +2395,7 @@ static void type_query(struct session *ses, unsigned char *ct, struct assoc *a, 
 	
 	if (a) ses->tq_prog = stracpy(a[0].prog), ses->tq_prog_flag_block = a[0].block, ses->tq_prog_flag_direct = direct_download_possible(ses->tq, a);
 	if (a && !a[0].ask) {
+	g_xwin = a->xwin;
 		tp_open(ses);
 		if (n) mem_free(a);
 		mem_free(ct);
@@ -2397,6 +2406,7 @@ static void type_query(struct session *ses, unsigned char *ct, struct assoc *a, 
 		if (!anonymous) msg_box(ses->term, getml(m1, NULL), TEXT_(T_UNKNOWN_TYPE), AL_CENTER | AL_EXTD_TEXT, TEXT_(T_CONTENT_TYPE_IS), cast_uchar " ", m1, cast_uchar ".\n", TEXT_(T_DO_YOU_WANT_TO_SAVE_OR_DISLPAY_THIS_FILE), NULL, ses, 3, TEXT_(T_SAVE), tp_save, B_ENTER, TEXT_(T_DISPLAY), tp_display, 0, TEXT_(T_CANCEL), tp_cancel, B_ESC);
 		else msg_box(ses->term, getml(m1, NULL), TEXT_(T_UNKNOWN_TYPE), AL_CENTER | AL_EXTD_TEXT, TEXT_(T_CONTENT_TYPE_IS), cast_uchar " ", m1, cast_uchar ".\n", TEXT_(T_DO_YOU_WANT_TO_SAVE_OR_DISLPAY_THIS_FILE), NULL, ses, 2, TEXT_(T_DISPLAY), tp_display, B_ENTER, TEXT_(T_CANCEL), tp_cancel, B_ESC);
 	} else {
+		g_xwin = a->xwin;
 		m2 = stracpy(a[0].label ? a[0].label : (unsigned char *)"");
 		if (!anonymous) msg_box(ses->term, getml(m1, m2, NULL), TEXT_(T_WHAT_TO_DO), AL_CENTER | AL_EXTD_TEXT, TEXT_(T_CONTENT_TYPE_IS), cast_uchar " ", m1, cast_uchar ".\n", TEXT_(T_DO_YOU_WANT_TO_OPEN_FILE_WITH), cast_uchar " ", m2, cast_uchar ", ", TEXT_(T_SAVE_IT_OR_DISPLAY_IT), NULL, ses, 4, TEXT_(T_OPEN), tp_open, B_ENTER, TEXT_(T_SAVE), tp_save, 0, TEXT_(T_DISPLAY), tp_display, 0, TEXT_(T_CANCEL), tp_cancel, B_ESC);
 		else msg_box(ses->term, getml(m1, m2, NULL), TEXT_(T_WHAT_TO_DO), AL_CENTER | AL_EXTD_TEXT, TEXT_(T_CONTENT_TYPE_IS), cast_uchar " ", m1, cast_uchar ".\n", TEXT_(T_DO_YOU_WANT_TO_OPEN_FILE_WITH), cast_uchar " ", m2, cast_uchar ", ", TEXT_(T_SAVE_IT_OR_DISPLAY_IT), NULL, ses, 3, TEXT_(T_OPEN), tp_open, B_ENTER, TEXT_(T_DISPLAY), tp_display, 0, TEXT_(T_CANCEL), tp_cancel, B_ESC);
@@ -2680,10 +2690,10 @@ void reload(struct session *ses, int no_cache)
 static void set_doc_view(struct session *ses)
 {
 	ses->screen->xp = 0;
-	ses->screen->yp = gf_val(1, G_BFU_FONT_SIZE);
+	ses->screen->yp = 0;
 	ses->screen->xw = ses->term->x;
-	if (ses->term->y < gf_val(2, 2 * G_BFU_FONT_SIZE)) ses->screen->yw = 0;
-	else ses->screen->yw = ses->term->y - gf_val(2, 2 * G_BFU_FONT_SIZE);
+	if (ses->term->y < 0) ses->screen->yw = 0;
+	else ses->screen->yw = ses->term->y;
 }
 
 static struct session *create_session(struct window *win)

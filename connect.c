@@ -326,9 +326,6 @@ static void ssl_want_read(struct connection *c)
 
 	set_connection_timeout(c);
 
-#ifndef HAVE_NSS
-	if (c->no_tsl) c->ssl->options |= SSL_OP_NO_TLSv1;
-#endif
 	switch ((ret2 = SSL_get_error(c->ssl, ret1 = SSL_connect(c->ssl)))) {
 		case SSL_ERROR_NONE:
 			c->newconn = NULL;
@@ -591,9 +588,7 @@ static void connected(struct connection *c)
 			goto ssl_error;
 		}
 		SSL_set_fd(c->ssl, *b->sock);
-#ifndef HAVE_NSS
-		if (c->no_tsl) c->ssl->options |= SSL_OP_NO_TLSv1;
-#endif
+
 		switch ((ret2 = SSL_get_error(c->ssl, ret1 = SSL_connect(c->ssl)))) {
 			case SSL_ERROR_WANT_READ:
 				setcstate(c, S_SSL_NEG);

@@ -472,31 +472,31 @@ static long scroll_bar_bar_color;
 void draw_vscroll_bar(struct graphics_device *dev, int x, int y, int yw, int total, int view, int pos)
 {
 	int spos, epos;
-	drv->draw_hline(dev, x, y, x + G_SCROLL_BAR_WIDTH, scroll_bar_frame_color);
-	drv->draw_vline(dev, x, y, y + yw, scroll_bar_frame_color);
-	drv->draw_vline(dev, x + G_SCROLL_BAR_WIDTH - 1, y, y + yw, scroll_bar_frame_color);
-	drv->draw_hline(dev, x, y + yw - 1, x + G_SCROLL_BAR_WIDTH, scroll_bar_frame_color);
-	drv->draw_vline(dev, x + 1, y + 1, y + yw - 1, scroll_bar_area_color);
-	drv->draw_vline(dev, x + G_SCROLL_BAR_WIDTH - 2, y + 1, y + yw - 1, scroll_bar_area_color);
+//	drv->draw_hline(dev, x, y, x + G_SCROLL_BAR_WIDTH, scroll_bar_frame_color);
+//	drv->draw_vline(dev, x, y, y + yw, scroll_bar_frame_color);
+//	drv->draw_vline(dev, x + G_SCROLL_BAR_WIDTH - 1, y, y + yw, scroll_bar_frame_color);
+//	drv->draw_hline(dev, x, y + yw - 1, x + G_SCROLL_BAR_WIDTH, scroll_bar_frame_color);
+	drv->draw_vline(dev, x, y, y + yw, scroll_bar_area_color);
+	drv->draw_vline(dev, x + G_SCROLL_BAR_WIDTH, y, y + yw, scroll_bar_area_color);
 	get_scrollbar_pos(yw - 4, total, view, pos, &spos, &epos);
-	drv->fill_area(dev, x + 2, y + 1, x + G_SCROLL_BAR_WIDTH - 2, y + 2 + spos, scroll_bar_area_color);
-	drv->fill_area(dev, x + 2, y + 2 + spos, x + G_SCROLL_BAR_WIDTH - 2, y + 2 + epos, scroll_bar_bar_color);
-	drv->fill_area(dev, x + 2, y + 2 + epos, x + G_SCROLL_BAR_WIDTH - 2, y + yw - 1, scroll_bar_area_color);
+	drv->fill_area(dev, x, y, x + G_SCROLL_BAR_WIDTH, y + spos, scroll_bar_area_color);
+	drv->fill_area(dev, x, y + spos, x + G_SCROLL_BAR_WIDTH, y + epos, scroll_bar_bar_color);
+	drv->fill_area(dev, x, y  + epos, x + G_SCROLL_BAR_WIDTH, y + yw, scroll_bar_area_color);
 }
 
 void draw_hscroll_bar(struct graphics_device *dev, int x, int y, int xw, int total, int view, int pos)
 {
 	int spos, epos;
-	drv->draw_vline(dev, x, y, y + G_SCROLL_BAR_WIDTH, scroll_bar_frame_color);
-	drv->draw_hline(dev, x, y, x + xw, scroll_bar_frame_color);
-	drv->draw_hline(dev, x, y + G_SCROLL_BAR_WIDTH - 1, x + xw, scroll_bar_frame_color);
-	drv->draw_vline(dev, x + xw - 1, y, y + G_SCROLL_BAR_WIDTH, scroll_bar_frame_color);
-	drv->draw_hline(dev, x + 1, y + 1, x + xw - 1, scroll_bar_area_color);
-	drv->draw_hline(dev, x + 1, y + G_SCROLL_BAR_WIDTH - 2, x + xw - 1, scroll_bar_area_color);
-	get_scrollbar_pos(xw - 4, total, view, pos, &spos, &epos);
-	drv->fill_area(dev, x + 1, y + 2, x + 2 + spos, y + G_SCROLL_BAR_WIDTH - 2, scroll_bar_area_color);
-	drv->fill_area(dev, x + 2 + spos, y + 2, x + 2 + epos, y + G_SCROLL_BAR_WIDTH - 2, scroll_bar_bar_color);
-	drv->fill_area(dev, x + 2 + epos, y + 2, x + xw - 1, y + G_SCROLL_BAR_WIDTH - 2, scroll_bar_area_color);
+//	drv->draw_vline(dev, x, y, y + G_SCROLL_BAR_WIDTH, scroll_bar_frame_color);
+//	drv->draw_hline(dev, x, y, x + xw, scroll_bar_frame_color);
+//	drv->draw_hline(dev, x, y + G_SCROLL_BAR_WIDTH - 1, x + xw, scroll_bar_frame_color);
+//	drv->draw_vline(dev, x + xw - 1, y, y + G_SCROLL_BAR_WIDTH, scroll_bar_frame_color);
+	drv->draw_hline(dev, x, y, x + xw, scroll_bar_area_color);
+	drv->draw_hline(dev, x, y + G_SCROLL_BAR_WIDTH, x + xw, scroll_bar_area_color);
+	get_scrollbar_pos(xw, total, view, pos, &spos, &epos);
+	drv->fill_area(dev, x, y, x + spos, y + G_SCROLL_BAR_WIDTH, scroll_bar_area_color);
+	drv->fill_area(dev, x + spos, y, x + epos, y + G_SCROLL_BAR_WIDTH, scroll_bar_bar_color);
+	drv->fill_area(dev, x + epos, y, x + xw, y + G_SCROLL_BAR_WIDTH, scroll_bar_area_color);
 }
 
 static void g_get_search(struct f_data *f, unsigned char *s)
@@ -565,7 +565,7 @@ void draw_graphical_doc(struct terminal *t, struct f_data_c *scr, int active)
 	restrict_clip_area(t->dev, &old, scr->xp, scr->yp, scr->xp + xw, scr->yp + yw);
 	if (scr->vsb) draw_vscroll_bar(t->dev, scr->xp + xw - G_SCROLL_BAR_WIDTH, scr->yp, yw - scr->hsb * G_SCROLL_BAR_WIDTH, scr->f_data->y, yw - scr->hsb * G_SCROLL_BAR_WIDTH, vs->view_pos);
 	if (scr->hsb) draw_hscroll_bar(t->dev, scr->xp, scr->yp + yw - G_SCROLL_BAR_WIDTH, xw - scr->vsb * G_SCROLL_BAR_WIDTH, scr->f_data->x, xw - scr->vsb * G_SCROLL_BAR_WIDTH, vs->view_posx);
-	if (scr->vsb && scr->hsb) drv->fill_area(t->dev, scr->xp + xw - G_SCROLL_BAR_WIDTH, scr->yp + yw - G_SCROLL_BAR_WIDTH, scr->xp + xw, scr->yp + yw, scroll_bar_frame_color);
+	if (scr->vsb && scr->hsb) drv->fill_area(t->dev, scr->xp + xw - G_SCROLL_BAR_WIDTH, scr->yp + yw - G_SCROLL_BAR_WIDTH, scr->xp + xw, scr->yp + yw, scroll_bar_area_color);
 	restrict_clip_area(t->dev, NULL, scr->xp, scr->yp, scr->xp + xw - scr->vsb * G_SCROLL_BAR_WIDTH, scr->yp + yw - scr->hsb * G_SCROLL_BAR_WIDTH);
 	/*debug("buu: %d %d %d, %d %d %d", scr->xl, vx, xw, scr->yl, vy, yw);*/
 	if (drv->flags & GD_DONT_USE_SCROLL && overwrite_instead_of_scroll) goto rrr;
@@ -915,7 +915,7 @@ static void process_sb_move(struct f_data_c *fd, int off)
 	*(h ? &fd->vs->view_posx : &fd->vs->view_pos) = (int)(rpos * (double)(h ? fd->f_data->x - w : fd->f_data->y - w) / (w - 4 - (en - st)));
 	fd->vs->orig_view_pos = fd->vs->view_pos;
 	fd->vs->orig_view_posx = fd->vs->view_posx;
-	draw_graphical_doc(fd->ses->term, fd, 1);
+//	draw_graphical_doc(fd->ses->term, fd, 1);
 }
 
 static inline int ev_in_rect(struct event *ev, int x1, int y1, int x2, int y2)
@@ -962,9 +962,10 @@ int g_next_link(struct f_data_c *fd, int dir)
 	int orig_link = -1;
 	int r = 2;
 	int n, pn;
-	if (fd->vs->current_link >= 0 && fd->vs->current_link < fd->f_data->nlinks) {
-		orig_link = fd->vs->current_link;
-		n = (pn = fd->vs->current_link) + dir;
+	int currLink = fd->vs->current_link;
+	if (currLink >= 0 && currLink < fd->f_data->nlinks && is_link_in_view(fd, currLink) ) {
+		orig_link = currLink;
+		n = (pn = currLink) + dir;
 	} else retry: n = dir > 0 ? 0 : fd->f_data->nlinks - 1, pn = -1;
 	again:
 	if (n < 0 || n >= fd->f_data->nlinks) {
@@ -1008,6 +1009,7 @@ int g_next_link(struct f_data_c *fd, int dir)
 		if ((fd->f_data->locked_on = fd->f_data->links[fd->vs->current_link].obj)) fd->ses->locked_link = 1;
 	}
 	set_textarea(fd->ses, fd, dir < 0 ? KBD_DOWN : KBD_UP);
+	fd->rq->stat.state = S__OK;
 	change_screen_status(fd->ses);
 	print_screen_status(fd->ses);
 	if (lr_link(fd, fd->vs->current_link)) r = 1;
@@ -1022,6 +1024,22 @@ static void unset_link(struct f_data_c *fd)
 	fd->vs->g_display_link = 0;
 	fd->ses->locked_link = 0;
 	if (n >= 0 && n < fd->f_data->nlinks) {
+		redraw_link(fd, n);
+	}
+
+}
+
+static void clear_link_status(struct f_data_c *fd)
+{
+	int n = fd->vs->current_link;
+	if (n >= 0 && n < fd->f_data->nlinks) {
+		fd->vs->g_display_link = 0;
+		redraw_link(fd, n);
+	
+		change_screen_status(fd->ses);
+		print_screen_status(fd->ses);
+
+		fd->vs->g_display_link = 1;
 		redraw_link(fd, n);
 	}
 }
@@ -1042,13 +1060,55 @@ static int scroll_vh(int *vp, int *ovp, int *sc, int d, int limit)
 
 static int scroll_v(struct f_data_c *fd, int y)
 {
+	fd->rq->stat.state = S_HIDE_STATUS;
 	return scroll_vh(&fd->vs->view_pos, &fd->vs->orig_view_pos, fd->ses->scrolling == 2 ? &fd->ses->scrolloff : NULL, y, fd->f_data->y - fd->yw + fd->hsb * G_SCROLL_BAR_WIDTH);
 }
 
 static int scroll_h(struct f_data_c *fd, int x)
 {
+	fd->rq->stat.state = S_HIDE_STATUS;
 	return scroll_vh(&fd->vs->view_posx, &fd->vs->orig_view_posx, fd->ses->scrolling == 2 ? &fd->ses->scrolltype : NULL, x, fd->f_data->x - fd->xw + fd->vsb * G_SCROLL_BAR_WIDTH);
 }
+
+#if 1 /* ZIPIT_Z2 */
+unsigned char scrollmark_file[MAX_STR_LEN]="";
+int read_scrollmark(struct session *ses, struct f_data_c *fd, int a)
+{
+	unsigned int pos = 0;
+	unsigned char *buf;
+
+	if (!*scrollmark_file)
+		snprintf(scrollmark_file,MAX_STR_LEN,"%sscrollmark.cfg",links_home?links_home:(unsigned char*)"");
+
+	buf=read_config_file(scrollmark_file);
+	if (a && buf){
+		pos = atoi(buf);
+		unset_link(fd);
+		/*
+		if (pos > fd->f_data->y - fd->yw + fd->f_data->hsb * G_SCROLL_BAR_WIDTH) {
+			return 0;
+		}
+		fd->vs->view_pos = pos;
+		fd->vs->orig_view_pos = fd->vs->view_pos;
+		return 3;
+		*/
+		return scroll_v(fd, fd->vs->view_pos-pos);
+	}
+	return 0;
+}
+
+static int write_scrollmark(struct session *ses, struct f_data_c *f)
+{
+	unsigned char buf[80];
+	unsigned int pos = 0;
+
+	if (!*scrollmark_file)
+	  read_scrollmark(ses, f, 0); /* 0 means just read, do not scroll*/
+
+	sprintf(buf, "%d\n", f->vs->view_pos);
+	write_to_config_file(scrollmark_file, buf);
+}
+#endif /* ZIPIT_Z2 */
 
 int g_frame_ev(struct session *ses, struct f_data_c *fd, struct event *ev)
 {
@@ -1205,7 +1265,12 @@ int g_frame_ev(struct session *ses, struct f_data_c *fd, struct event *ev)
 				html_interpret_recursive(ses->screen);
 				return 1;
 			}
+#if 1 /* ZIPIT_Z2 */
+			/* disable KBD_RIGHT for selecting link -- we Use dpad arrow buttons to scroll ZIPIT_Z2 */		
+			if (ev->x == KBD_ENTER) {
+#else
 			if (ev->x == KBD_RIGHT || ev->x == KBD_ENTER) {
+#endif
 				struct link *l;
 				if (fd->vs->current_link >= 0 && fd->vs->current_link < fd->f_data->nlinks) {
 					l = &fd->f_data->links[fd->vs->current_link];
@@ -1220,11 +1285,30 @@ int g_frame_ev(struct session *ses, struct f_data_c *fd, struct event *ev)
 				html_interpret_recursive(ses->screen);
 				return 1;
 			}
+#if 1 /* ZIPIT_Z2 */
+			/* Add scroll mark for ZIPIT_Z2 ereading. */
+			if (upcase(ev->x) == 'R' && !(ev->y & (KBD_CTRL | KBD_ALT))) return read_scrollmark(ses,fd, 1);
+			if (upcase(ev->x) == 'M' && !(ev->y & (KBD_CTRL | KBD_ALT))) return write_scrollmark(ses,fd); 
+
+			/* Add more convenient page scroll keys for ZIPIT_Z2 */
+			if (ev->x == KBD_PAGE_DOWN || (upcase(ev->x) == 'F' && ev->y & KBD_CTRL)
+			    || (ev->x == KBD_DOWN && (ev->y & (KBD_SHIFT | KBD_ALT))) // added alt or shift dn
+			    ) {
+#else
 			if (ev->x == KBD_PAGE_DOWN || (ev->x == ' ' && !(ev->y & KBD_ALT)) || (upcase(ev->x) == 'F' && ev->y & KBD_CTRL)) {
+#endif
 				unset_link(fd);
 				return scroll_v(fd, fd->yw - fd->hsb * G_SCROLL_BAR_WIDTH);
 			}
+
+#if 1 /* ZIPIT_Z2 */
+			/* Add more convenient page scroll keys for ZIPIT_Z2 */
+			if (ev->x == KBD_PAGE_UP || (upcase(ev->x) == 'B' && !(ev->y & KBD_ALT))
+			    || (ev->x == KBD_UP && (ev->y & (KBD_SHIFT | KBD_ALT))) // added alt or shift up
+			    ) {
+#else
 			if (ev->x == KBD_PAGE_UP || (upcase(ev->x) == 'B' && !(ev->y & KBD_ALT))) {
+#endif
 				unset_link(fd);
 				return scroll_v(fd, -(fd->yw - fd->hsb * G_SCROLL_BAR_WIDTH));
 			}
@@ -1236,10 +1320,28 @@ int g_frame_ev(struct session *ses, struct f_data_c *fd, struct event *ev)
 				up:
 				return scroll_v(fd, -64);
 			}
+#if 1 /* ZIPIT_Z2 */
+			/* Add more conveient scroll keys for ZIPIT_Z2 */
+			if (ev->x == KBD_DEL || (upcase(ev->x) == 'N' && ev->y & KBD_CTRL) 
+			    || (ev->x == KBD_DOWN && !(ev->y & (KBD_CTRL | KBD_ALT))) // added down arrow
+			    || (ev->x == ' ' && !(ev->y & KBD_ALT) && !(ev->y & KBD_SHIFT))) {
+
+				clear_link_status(fd); 
+#else
 			if (ev->x == KBD_DEL || (upcase(ev->x) == 'N' && ev->y & KBD_CTRL)) {
+#endif
 				return scroll_v(fd, 32);
 			}
+#if 1 /* ZIPIT_Z2 */
+			/* Add more conveient scroll keys for ZIPIT_Z2 */
+			if (ev->x == KBD_INS || (upcase(ev->x) == 'P' && ev->y & KBD_CTRL) 
+			    || (ev->x == KBD_UP && !(ev->y & (KBD_CTRL | KBD_ALT))) // added up arrow
+			    || (ev->x == ' ' && !(ev->y & KBD_ALT) && (ev->y & KBD_SHIFT))) {
+
+				clear_link_status(fd); 
+#else
 			if (ev->x == KBD_INS || (upcase(ev->x) == 'P' && ev->y & KBD_CTRL)) {
+#endif
 				return scroll_v(fd, -32);
 			}
 			if (/*ev->x == KBD_DOWN*/ 0) {
@@ -1250,18 +1352,71 @@ int g_frame_ev(struct session *ses, struct f_data_c *fd, struct event *ev)
 				up1:
 				return scroll_v(fd, -16);
 			}
+#if 1 /* ZIPIT_Z2 */
+	
+			/* Allow TAB, BACKTAB to traverse links on ZIPIT_Z2 (mouse eats up,dn keys)*/
+			if ((ev->x == KBD_TAB) && (ev->y & KBD_SHIFT)) {
+				return g_next_link(fd, -1);
+			}
+			if (ev->x == KBD_TAB) {
+				return g_next_link(fd, 1);
+			}
+
+			/* use <,>. for changing fontsize and image scale */	
+			if ((ev->x == '.') || (ev->x == '>') || (ev->x == '}') || (ev->x == ')')) {
+				//zoom in.....   increase the text size and reduce the imageScale
+				ses->ds.image_scale -= 5;
+				ses->ds.font_size++;		
+			//	html_interpret_recursive(fd);
+/*
+				struct graphics_device *dev = ses->term->dev;
+				struct rect r = {0, 0, 0, 0};
+				r.x2 = dev->size.x2, r.y2 = dev->size.y2;
+				t_redraw(dev, &r);
+	*/			
+				t_resize(ses->term->dev);
+//				reload(ses, -1);
+				return 0;
+//				return g_next_link(fd, 1);
+			}
+			if ((ev->x == ',') || (ev->x == '<') || (ev->x == '{') || (ev->x == '(')) {
+				//zoom out.....   reduce the text size and increase the imageScale
+				ses->ds.image_scale += 5;
+				ses->ds.font_size--;
+				t_resize(ses->term->dev);
+				return 0;
+//				return g_next_link(fd, -1);
+			}
+
+			/* Add more conveient sidescroll keys for ZIPIT_Z2 */
+			if ((ev->x == '[')
+			    || (ev->x == KBD_LEFT && !(ev->y & (KBD_CTRL | KBD_ALT))) // added left arrow
+			    ) {
+					
+#else
 			if (ev->x == KBD_DOWN) {
 				return g_next_link(fd, 1);
 			}
 			if (ev->x == KBD_UP) {
 				return g_next_link(fd, -1);
 			}
+
 			if (ev->x == '[') {
+#endif
 				left:
+				clear_link_status(fd); 
 				return scroll_h(fd, -64);
 			}
+#if 1 /* ZIPIT_Z2 */
+			/* Add more conveient sidescroll keys for ZIPIT_Z2 */
+			if ((ev->x == ']')
+			    || (ev->x == KBD_RIGHT && !(ev->y & (KBD_CTRL | KBD_ALT))) // added right arrow
+			    ) { 
+#else
 			if (ev->x == ']') {
+#endif
 				right:
+				clear_link_status(fd); 
 				return scroll_h(fd, 64);
 			}
 			if (/*ev->x == KBD_LEFT*/ 0) {

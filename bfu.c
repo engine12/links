@@ -2034,7 +2034,7 @@ void dlg_format_group(struct dialog_data *dlg, struct terminal *term, unsigned c
 			} else f = 0;
 		} else if (nx && nx + wx > w) {
 			nx = 0;
-			(*y) += gf_val(2, G_BFU_FONT_SIZE * 2);
+			(*y) += gf_val(2, G_BFU_FONT_SIZE * 3/2);
 		}
 		if (term) {
 			if (!F) print_text(term, x + nx + 4 * (item->item->type == D_CHECKBOX), *y, ttxtlen(term, _(texts[0], dlg->win->term)), _(texts[0], dlg->win->term), COLOR_DIALOG_TEXT);
@@ -2103,7 +2103,7 @@ void group_fn(struct dialog_data *dlg)
 	min_group_width(term, dlg->dlg->udata, dlg->items, dlg->n - 2, &min);
 	max_buttons_width(term, dlg->items + dlg->n - 2, 2, &max);
 	min_buttons_width(term, dlg->items + dlg->n - 2, 2, &min);
-	w = term->x * 9 / 10 - 2 * DIALOG_LB;
+	w = term->x - 2 * DIALOG_LB;
 	if (w > max) w = max;
 	if (w < min) w = min;
 	if (w > term->x - 2 * DIALOG_LB) w = term->x - 2 * DIALOG_LB;
